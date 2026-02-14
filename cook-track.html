@@ -344,15 +344,21 @@
             </div>
             
             <div style="margin-bottom: 30px;">
-                <h2 class="section-title">📦 Raw Ingredients (Cook Soon!)</h2>
-                <div id="raw-items-list">
+                <h2 class="section-title" onclick="toggleSection('raw')" style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between;">
+                    <span>📦 Raw in Fridge/Pantry (Cook Soon!)</span>
+                    <span id="raw-toggle" style="font-size: 1.5rem;">▼</span>
+                </h2>
+                <div id="raw-items-list" style="display: block;">
                     <div class="empty-state">No raw ingredients tracked yet</div>
                 </div>
             </div>
             
             <div>
-                <h2 class="section-title">🍖 Cooked & Ready to Eat</h2>
-                <div id="cooked-items-list">
+                <h2 class="section-title" onclick="toggleSection('cooked')" style="cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between;">
+                    <span>🍖 Cooked & Ready to Eat</span>
+                    <span id="cooked-toggle" style="font-size: 1.5rem;">▼</span>
+                </h2>
+                <div id="cooked-items-list" style="display: block;">
                     <div class="empty-state">No cooked items yet - start cooking!</div>
                 </div>
             </div>
@@ -396,13 +402,16 @@
     <div id="manual-add-modal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('manual-add-modal')">×</button>
-            <h2 style="color: white; margin-bottom: 20px;">➕ Add Item to Fridge</h2>
+            <h2 style="color: white; margin-bottom: 20px;">➕ Add Item to Fridge/Pantry</h2>
             
             <label>Item Name</label>
-            <input type="text" id="manual-item-name" placeholder="e.g., Garlic">
+            <input type="text" id="manual-item-name" list="approved-foods" placeholder="Start typing or select..." autocomplete="off">
+            <datalist id="approved-foods">
+                <!-- Will be populated dynamically -->
+            </datalist>
             
             <label>Amount</label>
-            <input type="text" id="manual-item-amount" placeholder="e.g., 1 bulb">
+            <input type="text" id="manual-item-amount" placeholder="e.g., 12 cups, 3 lbs, 4 servings">
             
             <label>Shelf Life (days)</label>
             <select id="manual-item-shelf-life">
@@ -416,12 +425,20 @@
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button onclick="closeModal('manual-add-modal')" class="btn-secondary" style="flex: 1;">Cancel</button>
-                <button onclick="addManualItem()" class="btn-green" style="flex: 1;">Add to Fridge</button>
+                <button onclick="addManualItem()" class="btn-green" style="flex: 1;">Add to Fridge/Pantry</button>
             </div>
         </div>
     </div>
     
     <script>
+        // Approved Foods Library (from index.html)
+        const approvedFoods = {
+            proteins: ['chicken breast', 'ground turkey', 'ground bison', 'ground beef', 'salmon', 'cod', 'turkey breast', 'lean pork', 'shrimp', 'eggs'],
+            veggies: ['broccoli', 'brussels sprouts', 'green beans', 'asparagus', 'cabbage', 'onions', 'bell peppers', 'zucchini', 'cauliflower', 'spinach', 'kale', 'mushrooms'],
+            carbs: ['white rice', 'brown rice', 'sweet potato', 'red potato', 'quinoa', 'oats', 'ezekiel bread'],
+            pantry: ['garlic', 'olive oil', 'coconut oil', 'avocado oil', 'salt', 'pepper', 'herbs', 'spices']
+        };
+        
         // Data
         let fridgeItems = JSON.parse(localStorage.getItem('fridgeItems') || '[]');
         let weeklyMeals = JSON.parse(localStorage.getItem('weekly') || '[]');
@@ -546,6 +563,32 @@
         
         // Manual add item
         function openManualAddModal() {
+            // Populate datalist with approved foods + previously used items
+            const datalist = document.getElementById('approved-foods');
+            datalist.innerHTML = '';
+            
+            // Get previously used items
+            const previousItems = [...new Set(fridgeItems.map(item => item.name.toLowerCase()))];
+            
+            // Combine approved foods
+            const allFoods = [
+                ...approvedFoods.proteins,
+                ...approvedFoods.veggies,
+                ...approvedFoods.carbs,
+                ...approvedFoods.pantry,
+                ...previousItems
+            ];
+            
+            // Remove duplicates and sort
+            const uniqueFoods = [...new Set(allFoods)].sort();
+            
+            // Populate datalist
+            uniqueFoods.forEach(food => {
+                const option = document.createElement('option');
+                option.value = cap(food);
+                datalist.appendChild(option);
+            });
+            
             document.getElementById('manual-add-modal').classList.add('show');
         }
         
@@ -911,6 +954,20 @@
         
         function closeRecipeView() {
             document.querySelectorAll('.recipe-view').forEach(el => el.remove());
+        }
+        
+        // Toggle collapsible sections
+        function toggleSection(section) {
+            const listEl = document.getElementById(section + '-items-list');
+            const toggleEl = document.getElementById(section + '-toggle');
+            
+            if (listEl.style.display === 'none') {
+                listEl.style.display = 'block';
+                toggleEl.textContent = '▼';
+            } else {
+                listEl.style.display = 'none';
+                toggleEl.textContent = '▶';
+            }
         }
         
         // Initialize

@@ -1363,7 +1363,7 @@
                 </div>
                 
                 <div class="filter-item">
-                    <h4>🧊 In Fridge</h4>
+                    <h4>🧊 In Fridge/Pantry</h4>
                     <select id="fridge-select" onchange="addFridge()">
                         <option value="">What you have...</option>
                     </select>
@@ -1959,9 +1959,10 @@
         });
 
         function populateSelects() {
-            // Get actual fridge items from localStorage
+            // Get actual fridge items from localStorage (raw items only)
             const fridgeItems = JSON.parse(localStorage.getItem('fridgeItems') || '[]');
-            const fridgeIngredients = fridgeItems.map(item => item.name.toLowerCase());
+            const rawFridgeItems = fridgeItems.filter(item => item.status === 'raw');
+            const fridgeIngredients = [...new Set(rawFridgeItems.map(item => item.name.toLowerCase()))]; // Unique names
             
             const all = [...allIngredients.proteins, ...allIngredients.carbs, ...allIngredients.veggies].sort();
             const ex = document.getElementById('exclude-select');
@@ -1972,17 +1973,10 @@
                 ex.add(new Option(item, item.toLowerCase()));
             });
             
-            // Populate fridge dropdown with items actually in fridge
-            if (fridgeIngredients.length > 0) {
-                fridgeIngredients.forEach(item => {
-                    fr.add(new Option(cap(item), item));
-                });
-            } else {
-                // Fallback to all ingredients if fridge is empty
-                all.forEach(item => {
-                    fr.add(new Option(item, item.toLowerCase()));
-                });
-            }
+            // Populate fridge dropdown ONLY with items actually in fridge/pantry
+            fridgeIngredients.forEach(item => {
+                fr.add(new Option(cap(item), item));
+            });
         }
 
         function addExclusion() {
