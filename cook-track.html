@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cook & Track - Meal Prep Execution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .main-content {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .groceries-prompt {
+            background: rgba(255,255,255,0.08);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .groceries-prompt h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .groceries-prompt p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        .btn-pink {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .section-title {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .fridge-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .fridge-item.fresh {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .fridge-item.soon {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .fridge-item.urgent {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .fridge-item-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .fridge-item-amount {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 12px;
+        }
+        
+        .fridge-item-dates {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            flex-wrap: wrap;
+        }
+        
+        .freshness-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .freshness-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .freshness-fill.fresh {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+        
+        .freshness-fill.soon {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .freshness-fill.urgent {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .freshness-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .fridge-item-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .fridge-item-actions button {
+            padding: 10px 18px;
+            font-size: 0.85rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.6);
+            font-size: 1rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 2rem;
+            border: none;
+            background: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            color: white;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .recipe-view {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .recipe-view h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .instruction-step {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 3px solid #10b981;
+            color: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👨‍🍳 Cook & Track</h1>
+            <p style="margin-top: 10px; color: rgba(255,255,255,0.9); font-size: 1.1rem;">
+                Track ingredients, monitor freshness, and cook with confidence
+            </p>
+            <a href="index.html" class="back-link">← Back to Meal Planner</a>
+        </header>
+        
+        <div class="main-content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <button class="btn-purple" onclick="openManualAddModal()" style="padding: 16px 32px; font-size: 1.1rem; font-weight: 700;">
+                    ➕ Add Items to Fridge
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h2 class="section-title">📦 Raw Ingredients (Cook Soon!)</h2>
+                <div id="raw-items-list">
+                    <div class="empty-state">No raw ingredients tracked yet</div>
+                </div>
+            </div>
+            
+            <div>
+                <h2 class="section-title">🍖 Cooked & Ready to Eat</h2>
+                <div id="cooked-items-list">
+                    <div class="empty-state">No cooked items yet - start cooking!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Partial Use Modal -->
+    <div id="partial-use-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('partial-use-modal')">×</button>
+            <h2 style="color: white; margin-bottom: 20px;">📊 Use Partial Amount</h2>
+            
+            <div id="partial-item-info" style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <div style="color: white; font-weight: 600; font-size: 1.1rem;" id="partial-item-name"></div>
+                <div style="color: rgba(255,255,255,0.8); margin-top: 5px;">Currently have: <strong id="partial-current-amount"></strong></div>
+            </div>
+            
+            <label>How much are you using?</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                <input type="number" id="partial-amount-used" placeholder="e.g., 3" min="0.1" step="0.5" style="flex: 1;">
+                <span id="partial-unit" style="color: white; font-weight: 600;"></span>
+            </div>
+            
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+                <div style="color: #fbbf24; font-weight: 600; margin-bottom: 5px;">📝 What happens:</div>
+                <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">
+                    • Amount used goes to "Cooked & Ready to Eat"<br>
+                    • Remaining amount stays in "Raw Ingredients"<br>
+                    • Shopping list will check remaining amount
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="closeModal('partial-use-modal')" class="btn-secondary" style="flex: 1;">Cancel</button>
+                <button onclick="confirmPartialUse()" class="btn-green" style="flex: 1;">✓ Use This Amount</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manual Add Modal -->
+    <div id="manual-add-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('manual-add-modal')">×</button>
+            <h2 style="color: white; margin-bottom: 20px;">➕ Add Item to Fridge</h2>
+            
+            <label>Item Name</label>
+            <input type="text" id="manual-item-name" placeholder="e.g., Garlic">
+            
+            <label>Amount</label>
+            <input type="text" id="manual-item-amount" placeholder="e.g., 1 bulb">
+            
+            <label>Shelf Life (days)</label>
+            <select id="manual-item-shelf-life">
+                <option value="2">2 days (raw meat/fish)</option>
+                <option value="5">5 days (raw veggies)</option>
+                <option value="7">7 days (dairy, eggs)</option>
+                <option value="14" selected>14 days (pantry carbs)</option>
+                <option value="30">30 days (garlic, onions, spices)</option>
+                <option value="90">90 days (frozen items)</option>
+            </select>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="closeModal('manual-add-modal')" class="btn-secondary" style="flex: 1;">Cancel</button>
+                <button onclick="addManualItem()" class="btn-green" style="flex: 1;">Add to Fridge</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Data
+        let fridgeItems = JSON.parse(localStorage.getItem('fridgeItems') || '[]');
+        let weeklyMeals = JSON.parse(localStorage.getItem('weekly') || '[]');
+        
+        // Helper functions
+        function cap(str) {
+            return str.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const dateOnly = dateStr.split('T')[0];
+            const todayStr = today.toISOString().split('T')[0];
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            if (dateOnly === todayStr) return 'Today';
+            if (dateOnly === yesterdayStr) return 'Yesterday';
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        
+        // Mark groceries as purchased
+        function markGroceriesGot() {
+            if (weeklyMeals.length === 0) {
+                showToast('Add meals to your weekly plan first!', 'error');
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            const proteins = {}, carbs = {}, veggies = {};
+            
+            weeklyMeals.forEach(m => {
+                if (m.type === 'component') {
+                    const proteinKey = m.protein.protein;
+                    const veggieKey = m.veggie.veggie;
+                    
+                    if (!proteins[proteinKey]) proteins[proteinKey] = { count: 0, recipe: m.protein };
+                    proteins[proteinKey].count++;
+                    
+                    if (!veggies[veggieKey]) veggies[veggieKey] = { count: 0, recipe: m.veggie };
+                    veggies[veggieKey].count++;
+                    
+                    if (m.carb) {
+                        const carbKey = m.carb.carb;
+                        if (!carbs[carbKey]) carbs[carbKey] = { count: 0, recipe: m.carb };
+                        carbs[carbKey].count++;
+                    }
+                }
+            });
+            
+            Object.entries(proteins).forEach(([key, data]) => {
+                fridgeItems.push({
+                    id: Date.now() + Math.random(),
+                    name: cap(key),
+                    amount: (data.count * 0.5) + ' lbs',
+                    type: 'protein',
+                    status: 'raw',
+                    dateAdded: today,
+                    dateCooked: null,
+                    shelfLifeRaw: 2,      // Raw meat: 1-2 days in fridge
+                    shelfLifeCooked: 4,   // Cooked meat: 3-4 days in fridge
+                    recipe: data.recipe
+                });
+            });
+            
+            Object.entries(veggies).forEach(([key, data]) => {
+                fridgeItems.push({
+                    id: Date.now() + Math.random(),
+                    name: cap(key),
+                    amount: data.count + ' servings',
+                    type: 'veggie',
+                    status: 'raw',
+                    dateAdded: today,
+                    dateCooked: null,
+                    shelfLifeRaw: 5,      // Raw veggies: 3-7 days in fridge
+                    shelfLifeCooked: 4,   // Cooked veggies: 3-5 days in fridge
+                    recipe: data.recipe
+                });
+            });
+            
+            Object.entries(carbs).forEach(([key, data]) => {
+                fridgeItems.push({
+                    id: Date.now() + Math.random(),
+                    name: cap(key),
+                    amount: data.count + ' servings',
+                    type: 'carb',
+                    status: 'raw',
+                    dateAdded: today,
+                    dateCooked: null,
+                    shelfLifeRaw: 14,     // Pantry carbs: 2+ weeks (rice, potatoes, sweet potato)
+                    shelfLifeCooked: 5,   // Cooked carbs: 5-7 days in fridge
+                    recipe: data.recipe
+                });
+            });
+            
+            localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+            renderFridgeTracker();
+            
+            const total = Object.keys(proteins).length + Object.keys(veggies).length + Object.keys(carbs).length;
+            showToast('Added ' + total + ' items to fridge!', 'success');
+        }
+        
+        // Manual add item
+        function openManualAddModal() {
+            document.getElementById('manual-add-modal').classList.add('show');
+        }
+        
+        function addManualItem() {
+            const name = document.getElementById('manual-item-name').value.trim();
+            const amount = document.getElementById('manual-item-amount').value.trim();
+            const shelfLife = parseInt(document.getElementById('manual-item-shelf-life').value);
+            
+            if (!name || !amount) {
+                showToast('Please fill in item name and amount', 'error');
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            fridgeItems.push({
+                id: Date.now(),
+                name: name,
+                amount: amount,
+                type: 'pantry',
+                status: 'raw',
+                dateAdded: today,
+                dateCooked: null,
+                shelfLifeRaw: shelfLife,
+                shelfLifeCooked: shelfLife,
+                recipe: null
+            });
+            
+            localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+            renderFridgeTracker();
+            closeModal('manual-add-modal');
+            showToast('Added ' + name + ' to fridge!', 'success');
+        }
+        
+        // Calculate freshness
+        function calculateFreshness(item) {
+            const today = new Date();
+            const referenceDate = item.status === 'cooked' ? new Date(item.dateCooked) : new Date(item.dateAdded);
+            const shelfLife = item.status === 'cooked' ? item.shelfLifeCooked : item.shelfLifeRaw;
+            
+            const diffTime = today - referenceDate;
+            const daysOld = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const daysLeft = shelfLife - daysOld;
+            
+            let status, color, stars;
+            if (daysLeft <= 0 || daysLeft <= 1) {
+                status = 'urgent';
+                color = '#ef4444';
+                stars = '🔴';
+            } else if (daysLeft <= 2) {
+                status = 'soon';
+                color = '#f59e0b';
+                stars = '🟡';
+            } else {
+                status = 'fresh';
+                color = '#10b981';
+                stars = '🟢';
+            }
+            
+            const percentage = Math.max(0, Math.min(100, (daysLeft / shelfLife) * 100));
+            
+            return {
+                dayNumber: daysOld + 1,
+                totalDays: shelfLife,
+                daysLeft: Math.max(0, daysLeft),
+                status,
+                color,
+                stars,
+                percentage,
+                daysOld
+            };
+        }
+        
+        // Render fridge item
+        function renderFridgeItem(item, freshness, isRaw) {
+            const dateLabel = isRaw ? 'Bought' : 'Cooked';
+            const dateValue = isRaw ? item.dateAdded : item.dateCooked;
+            const expireDate = new Date(dateValue);
+            expireDate.setDate(expireDate.getDate() + (isRaw ? item.shelfLifeRaw : item.shelfLifeCooked));
+            
+            let freshnessText = isRaw 
+                ? (freshness.daysLeft <= 1 ? 'Cook today!' : freshness.daysLeft + ' days left')
+                : 'Day ' + freshness.dayNumber + ' of ' + freshness.totalDays;
+            
+            // Check if item can be partially used (has numeric amount like "12 cups" or "6 servings")
+            const canPartialUse = isRaw && /\d+/.test(item.amount);
+            
+            let actionButtons = '';
+            if (isRaw && item.recipe && item.recipe.instructions) {
+                actionButtons = '<button class="btn-purple" onclick="viewRecipe(' + item.id + ')" style="flex: 1;">📖 View Recipe</button>';
+                if (canPartialUse) {
+                    actionButtons += '<button class="btn-secondary" onclick="usePartial(' + item.id + ')" style="flex: 0.8;">📊 Use Partial</button>';
+                }
+                actionButtons += '<button class="btn-green" onclick="markAsCooked(' + item.id + ')">🍳 Cook All</button>';
+            } else if (isRaw) {
+                if (canPartialUse) {
+                    actionButtons = '<button class="btn-secondary" onclick="usePartial(' + item.id + ')" style="flex: 1;">📊 Use Partial</button>' +
+                                   '<button class="btn-green" onclick="markAsCooked(' + item.id + ')">🍳 Cook All</button>';
+                } else {
+                    actionButtons = '<button class="btn-green" onclick="markAsCooked(' + item.id + ')">🍳 Mark as Cooked</button>';
+                }
+            } else {
+                actionButtons = '<button class="btn-pink" onclick="markAsEaten(' + item.id + ')">✅ Ate This</button>';
+            }
+            
+            return '<div class="fridge-item ' + freshness.status + '">' +
+                '<div class="fridge-item-name">' + freshness.stars + ' ' + item.name + '</div>' +
+                '<div class="fridge-item-amount">' + item.amount + '</div>' +
+                '<div class="fridge-item-dates">' +
+                    '<div>📅 ' + dateLabel + ': ' + formatDate(dateValue) + '</div>' +
+                    '<div>⏰ Eat by: ' + formatDate(expireDate.toISOString().split('T')[0]) + '</div>' +
+                '</div>' +
+                '<div class="freshness-bar"><div class="freshness-fill ' + freshness.status + '" style="width: ' + freshness.percentage + '%"></div></div>' +
+                '<div class="freshness-text" style="color: ' + freshness.color + '">' + freshnessText + '</div>' +
+                '<div class="fridge-item-actions">' +
+                    actionButtons +
+                    '<button class="btn-secondary" onclick="removeFridgeItem(' + item.id + ')">🗑️ Remove</button>' +
+                '</div>' +
+            '</div>';
+        }
+        
+        // Render fridge tracker
+        function renderFridgeTracker() {
+            fridgeItems = JSON.parse(localStorage.getItem('fridgeItems') || '[]');
+            
+            const rawEl = document.getElementById('raw-items-list');
+            const cookedEl = document.getElementById('cooked-items-list');
+            
+            const rawItems = fridgeItems.filter(item => item.status === 'raw');
+            const cookedItems = fridgeItems.filter(item => item.status === 'cooked');
+            
+            if (rawItems.length === 0) {
+                rawEl.innerHTML = '<div class="empty-state">No raw ingredients tracked yet</div>';
+            } else {
+                rawEl.innerHTML = rawItems.map(item => {
+                    const freshness = calculateFreshness(item);
+                    return renderFridgeItem(item, freshness, true);
+                }).join('');
+            }
+            
+            if (cookedItems.length === 0) {
+                cookedEl.innerHTML = '<div class="empty-state">No cooked items yet - start cooking!</div>';
+            } else {
+                cookedEl.innerHTML = cookedItems.map(item => {
+                    const freshness = calculateFreshness(item);
+                    return renderFridgeItem(item, freshness, false);
+                }).join('');
+            }
+        }
+        
+        // Mark as cooked
+        function markAsCooked(itemId) {
+            const item = fridgeItems.find(i => i.id === itemId);
+            if (item) {
+                item.status = 'cooked';
+                item.dateCooked = new Date().toISOString().split('T')[0];
+                localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+                renderFridgeTracker();
+                showToast(item.name + ' marked as cooked!', 'success');
+            }
+        }
+        
+        // Mark as eaten
+        function markAsEaten(itemId) {
+            fridgeItems = fridgeItems.filter(i => i.id !== itemId);
+            localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+            renderFridgeTracker();
+            showToast('Item removed - enjoy!', 'success');
+        }
+        
+        // Remove item
+        // Partial use functionality
+        let partialUseItemId = null;
+        
+        function usePartial(itemId) {
+            const item = fridgeItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            partialUseItemId = itemId;
+            
+            // Parse current amount
+            const match = item.amount.match(/(\d+(?:\.\d+)?)\s*(\w+)/);
+            if (!match) {
+                showToast('Cannot parse amount for partial use', 'error');
+                return;
+            }
+            
+            const currentAmount = parseFloat(match[1]);
+            const unit = match[2];
+            
+            // Populate modal
+            document.getElementById('partial-item-name').textContent = item.name;
+            document.getElementById('partial-current-amount').textContent = item.amount;
+            document.getElementById('partial-unit').textContent = unit;
+            document.getElementById('partial-amount-used').value = '';
+            document.getElementById('partial-amount-used').max = currentAmount;
+            
+            // Show modal
+            document.getElementById('partial-use-modal').classList.add('show');
+        }
+        
+        function confirmPartialUse() {
+            const item = fridgeItems.find(i => i.id === partialUseItemId);
+            if (!item) return;
+            
+            const amountUsed = parseFloat(document.getElementById('partial-amount-used').value);
+            if (!amountUsed || amountUsed <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            // Parse current amount
+            const match = item.amount.match(/(\d+(?:\.\d+)?)\s*(\w+)/);
+            if (!match) return;
+            
+            const currentAmount = parseFloat(match[1]);
+            const unit = match[2];
+            
+            if (amountUsed > currentAmount) {
+                showToast('Cannot use more than you have! (' + currentAmount + ' ' + unit + ')', 'error');
+                return;
+            }
+            
+            const remaining = currentAmount - amountUsed;
+            const today = new Date().toISOString().split('T')[0];
+            
+            // If using all, just mark as cooked
+            if (remaining <= 0.1) {
+                item.status = 'cooked';
+                item.dateCooked = today;
+                localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+                renderFridgeTracker();
+                closeModal('partial-use-modal');
+                showToast('Cooked all ' + item.name + '!', 'success');
+                return;
+            }
+            
+            // Create cooked portion
+            fridgeItems.push({
+                id: Date.now(),
+                name: item.name,
+                amount: amountUsed + ' ' + unit,
+                type: item.type,
+                status: 'cooked',
+                dateAdded: item.dateAdded,
+                dateCooked: today,
+                shelfLifeRaw: item.shelfLifeRaw,
+                shelfLifeCooked: item.shelfLifeCooked,
+                recipe: item.recipe
+            });
+            
+            // Update raw item with remaining amount
+            item.amount = remaining + ' ' + unit;
+            
+            localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+            renderFridgeTracker();
+            closeModal('partial-use-modal');
+            showToast('Used ' + amountUsed + ' ' + unit + ' of ' + item.name + '! (' + remaining + ' ' + unit + ' remaining)', 'success');
+        }
+        
+        function removeFridgeItem(itemId) {
+            fridgeItems = fridgeItems.filter(i => i.id !== itemId);
+            localStorage.setItem('fridgeItems', JSON.stringify(fridgeItems));
+            renderFridgeTracker();
+            showToast('Item removed', 'info');
+        }
+        
+        // View recipe
+        function viewRecipe(itemId) {
+            const item = fridgeItems.find(i => i.id === itemId);
+            if (!item || !item.recipe || !item.recipe.instructions) {
+                showToast('No recipe available', 'error');
+                return;
+            }
+            
+            // Find the item element and check if recipe is already shown
+            const itemEls = document.querySelectorAll('.fridge-item');
+            let targetEl = null;
+            itemEls.forEach(el => {
+                if (el.innerHTML.includes('viewRecipe(' + itemId + ')')) {
+                    targetEl = el;
+                }
+            });
+            
+            if (!targetEl) return;
+            
+            // Check if recipe is already open - if so, close it (toggle)
+            const existing = targetEl.nextElementSibling;
+            if (existing && existing.classList.contains('recipe-view')) {
+                existing.remove();
+                return; // TOGGLE OFF - recipe was open, now closed
+            }
+            
+            // Close any other open recipes first
+            document.querySelectorAll('.recipe-view').forEach(el => el.remove());
+            
+            const recipe = item.recipe;
+            
+            // Build instructions HTML
+            const instructions = recipe.instructions.map((step, i) => 
+                '<div class="instruction-step"><strong style="color: #10b981;">Step ' + (i + 1) + ':</strong> ' + step + '</div>'
+            ).join('');
+            
+            // Build ingredients HTML if available
+            let ingredientsHTML = '';
+            if (recipe.ingredients && recipe.ingredients.length > 0) {
+                const ingredientsList = recipe.ingredients.map(ing => 
+                    '<div style="padding: 8px; color: rgba(255,255,255,0.9);">• ' + ing + '</div>'
+                ).join('');
+                ingredientsHTML = '<div style="margin-bottom: 20px;">' +
+                    '<h4 style="color: white; margin-bottom: 12px;">📋 Ingredients:</h4>' +
+                    '<div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px;">' +
+                        ingredientsList +
+                    '</div>' +
+                '</div>';
+            }
+            
+            // Build rating HTML
+            let ratingHTML = '';
+            if (recipe.rating && recipe.rating > 0) {
+                ratingHTML = '<span style="color: #fbbf24;">⭐ ' + recipe.rating + '</span> • ';
+            }
+            
+            // Build source HTML
+            let sourceHTML = '';
+            if (recipe.source && recipe.sourceUrl) {
+                sourceHTML = '<div style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">' +
+                    ratingHTML +
+                    '<a href="' + recipe.sourceUrl + '" target="_blank" style="color: #8b5cf6; text-decoration: none;">🔗 ' + recipe.source + '</a>' +
+                '</div>';
+            }
+            
+            const recipeHTML = '<div class="recipe-view">' +
+                '<h3 style="font-size: 1.5rem; margin-bottom: 10px;">' + (recipe.icon || '🍳') + ' ' + recipe.name + '</h3>' +
+                '<div style="color: rgba(255,255,255,0.9); margin-bottom: 15px; font-weight: 600;">' +
+                    '⏱️ ' + recipe.time + 'min • 📊 ' + recipe.difficulty +
+                '</div>' +
+                sourceHTML +
+                ingredientsHTML +
+                '<h4 style="color: white; margin-bottom: 12px;">👨‍🍳 Cooking Instructions:</h4>' +
+                '<div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px;">' +
+                    instructions +
+                '</div>' +
+                '<div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 20px;">' +
+                    '<strong style="color: #10b981;">💡 Storage Tip:</strong> ' +
+                    '<span style="color: rgba(255,255,255,0.9);">Store in airtight container. Good for ' + item.shelfLifeCooked + ' days refrigerated.</span>' +
+                '</div>' +
+                '<div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">' +
+                    '<button class="btn-green" onclick="markAsCooked(' + itemId + '); closeRecipeView();" style="flex: 1; min-width: 200px;">✅ Done! Mark as Cooked</button>' +
+                    '<button class="btn-secondary" onclick="closeRecipeView()">▲ Collapse Recipe</button>' +
+                '</div>' +
+            '</div>';
+            
+            const div = document.createElement('div');
+            div.innerHTML = recipeHTML;
+            targetEl.parentNode.insertBefore(div.firstChild, targetEl.nextSibling);
+            
+            // Scroll to recipe
+            setTimeout(() => {
+                div.firstChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        function closeRecipeView() {
+            document.querySelectorAll('.recipe-view').forEach(el => el.remove());
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFridgeTracker();
+            
+            if (localStorage.getItem('openManualAdd') === 'true') {
+                localStorage.removeItem('openManualAdd');
+                setTimeout(() => openManualAddModal(), 500);
+            }
+        });
+    </script>
+</body>
+</html>
